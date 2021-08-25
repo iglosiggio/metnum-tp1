@@ -3,7 +3,6 @@
 using namespace std;
 
 vector<double> colleyMatrixMethod::calculateLeaderboard(const int teams, const int matches, const vector<vector<int>> resultMatrix) {
-    vector<double> results(teams, 0.0);
     vector<vector<double>> C;
     for (int i = 0; i < teams; ++i){
         C.push_back(vector<double>(teams,0));
@@ -13,11 +12,7 @@ vector<double> colleyMatrixMethod::calculateLeaderboard(const int teams, const i
     vector<double> wins(teams,0);
     vector<double> losses(teams,0);
 
-
-
     for (int i = 0; i < matches; ++i){
-        
-
         if (resultMatrix[i][2] > resultMatrix[i][4]) {
             wins[resultMatrix[i][1]-1]++;
             losses[resultMatrix[i][3]-1]++;
@@ -60,8 +55,6 @@ vector<double> colleyMatrixMethod::calculateLeaderboard(const int teams, const i
         }
         result[i] = res/C[i][i];
     }
+
     return result;
-
-
-    return results;
 }

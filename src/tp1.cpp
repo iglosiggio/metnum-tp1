@@ -5,16 +5,16 @@
 
 using namespace std;
 
-vector<vector<int>> readMatrixFromFile(const string filePath, int *teamQuantity, int *matchesQuantity) {
+vector<vector<int>> readMatrixFromFile(const string filePath, int *teams, int *matches) {
     vector<vector<int>> resultMatrix;
     ifstream file;
     file.open(filePath);
 
     if (file.is_open()) {
-        file >> *teamQuantity;
-        file >> *matchesQuantity;
+        file >> *teams;
+        file >> *matches;
 
-        for (int i = 0; i < *matchesQuantity; ++i) {
+        for (int i = 0; i < *matches; ++i) {
             vector<int> match;
             for (int j = 0; j < 5; ++j) {
                 int val;
@@ -51,17 +51,17 @@ int main(int argc, char* argv[]) {
 
     vector<string> params(argv + 1, argv + argc);
 
-    int teamQuantity = 0;
-    int matchesQuantity = 0;
-    vector<vector<int>> resultMatrix = readMatrixFromFile(params[0], &teamQuantity, &matchesQuantity);
+    int teams = 0;
+    int matches = 0;
+    vector<vector<int>> resultMatrix = readMatrixFromFile(params[0], &teams, &matches);
     vector<double> ranking;
 
     if (params[2] == "0") {
-        ranking = colleyMatrixMethod::calculateLeaderboard(teamQuantity, matchesQuantity, resultMatrix);
+        ranking = colleyMatrixMethod::calculateLeaderboard(teams, matches, resultMatrix);
     } else if (params[2] == "1") {
-        ranking = winningPercentage::calculateLeaderboard(teamQuantity, matchesQuantity, resultMatrix);
+        ranking = winningPercentage::calculateLeaderboard(teams, matches, resultMatrix);
     } else if (params[2] == "2") {
-        //TODO: ranking = ...::calculateLeaderboard(teamQuantity, matchesQuantity, resultMatrix);
+        //TODO: ranking = ...::calculateLeaderboard(teams, matches, resultMatrix);
     } else {
         cout << "Metodo a considerar invalido. Los posibles son: 0 CMM, 1 WP, 2 alternativo" << endl;
         return 1;

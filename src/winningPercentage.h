@@ -6,5 +6,5 @@ using namespace std;
 
 class winningPercentage {
 public:
-    static vector<double> calculateLeaderboard(int teamQuantity, int matchesQuantity, vector<vector<int>> resultMatrix);
+    static vector<double> calculateLeaderboard(int teams, int matches, vector<vector<int>> resultMatrix);
 };

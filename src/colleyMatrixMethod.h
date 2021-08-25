@@ -6,5 +6,5 @@ using namespace std;
 
 class colleyMatrixMethod {
 public:
-    static vector<double> calculateLeaderboard(int teamQuantity, int matchesQuantity, vector<vector<int>> resultMatrix);
+    static vector<double> calculateLeaderboard(int teams, int matches, vector<vector<int>> resultMatrix);
 };
