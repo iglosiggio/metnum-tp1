@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include "config.h"
 #include "colleyMatrixMethod.h"
 #include "winningPercentage.h"
 #include "justice.h"
@@ -30,7 +31,7 @@ vector<vector<int>> readMatrixFromFile(const string filePath, int *teams, int *m
     return resultMatrix;
 }
 
-void saveRankingToFile(const vector<double> ranking, const string filePath) {
+void saveRankingToFile(const vector<metnum_float_t> ranking, const string filePath) {
     vector<vector<int>> resultMatrix;
     ofstream file;
     file.open(filePath);
@@ -56,7 +57,7 @@ int main(int argc, char* argv[]) {
     int teams = 0;
     int matches = 0;
     vector<vector<int>> resultMatrix = readMatrixFromFile(params[0], &teams, &matches);
-    vector<double> ranking;
+    vector<metnum_float_t> ranking;
 
     if (params[2] == "0") {
         ranking = colleyMatrixMethod::calculateLeaderboard(teams, matches, resultMatrix);
