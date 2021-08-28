@@ -13,7 +13,7 @@ En la primera pasada se calculan los ganados y jugados y
 en la segunda la suma de los porcentajes de los rivales
 */
 
-vector<metnum_float_t> justice::calculateLeaderboard(const int teamQuantity, const int matchesQuantity, const vector<vector<int>> resultMatrix) {
+vector<metnum_float_t> justice::calculateLeaderboard(const int teamQuantity, const int matchesQuantity, const vector<vector<int>>& resultMatrix) {
     vector<metnum_float_t> results(teamQuantity, 0.0);
     vector<metnum_float_t> matchesQuantityPerTeam(teamQuantity, 0);
     vector<metnum_float_t> matchesRivals(teamQuantity, 0);

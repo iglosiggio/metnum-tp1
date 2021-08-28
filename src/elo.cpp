@@ -14,7 +14,7 @@ Donde K es una constante que depende del elo del jugador:
     K = 16: para jugadores por encima de 2400
 Mientras que el resultado puede ser 1 o 0 ya que no hay empates.    
 */
-vector<metnum_float_t> elo::calculateLeaderboard(const int teamQuantity, const int matchesQuantity, const vector<vector<int>> resultMatrix) {
+vector<metnum_float_t> elo::calculateLeaderboard(const int teamQuantity, const int matchesQuantity, const vector<vector<int>>& resultMatrix) {
     vector<metnum_float_t> elo(teamQuantity, 0);
 
     auto factorK = [](metnum_float_t elo) -> metnum_float_t {

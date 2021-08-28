@@ -2,7 +2,7 @@
 
 using namespace std;
 
-vector<metnum_float_t> colleyMatrixMethod::calculateLeaderboard(const int teams, const int matches, const vector<vector<int>> resultMatrix) {
+vector<metnum_float_t> colleyMatrixMethod::calculateLeaderboard(const int teams, const int matches, const vector<vector<int>>& resultMatrix) {
     vector<vector<metnum_float_t>> C;
     for (int i = 0; i < teams; ++i){
         C.push_back(vector<metnum_float_t>(teams,0));

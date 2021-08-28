@@ -6,5 +6,5 @@ using namespace std;
 
 class winningPercentage {
 public:
-    static vector<metnum_float_t> calculateLeaderboard(int teams, int matches, vector<vector<int>> resultMatrix);
+    static vector<metnum_float_t> calculateLeaderboard(int teams, int matches, const vector<vector<int>>& resultMatrix);
 };

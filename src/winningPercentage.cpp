@@ -2,7 +2,7 @@
 
 using namespace std;
 
-vector<metnum_float_t> winningPercentage::calculateLeaderboard(const int teams, const int matches, const vector<vector<int>> resultMatrix) {
+vector<metnum_float_t> winningPercentage::calculateLeaderboard(const int teams, const int matches, const vector<vector<int>>& resultMatrix) {
     vector<metnum_float_t> results(teams, 0.0);
     vector<metnum_float_t> matchesPerTeam(teams, 0.0);
 
