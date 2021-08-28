@@ -2,6 +2,8 @@
 #include <fstream>
 #include "colleyMatrixMethod.h"
 #include "winningPercentage.h"
+#include "justice.h"
+#include "elo.h"
 
 using namespace std;
 
@@ -61,7 +63,9 @@ int main(int argc, char* argv[]) {
     } else if (params[2] == "1") {
         ranking = winningPercentage::calculateLeaderboard(teams, matches, resultMatrix);
     } else if (params[2] == "2") {
-        //TODO: ranking = ...::calculateLeaderboard(teams, matches, resultMatrix);
+        ranking = justice::calculateLeaderboard(teams, matches, resultMatrix);
+    } else if (params[2] == "3") {
+        ranking = elo::calculateLeaderboard(teams, matches, resultMatrix);
     } else {
         cout << "Metodo a considerar invalido. Los posibles son: 0 CMM, 1 WP, 2 alternativo" << endl;
         return 1;
