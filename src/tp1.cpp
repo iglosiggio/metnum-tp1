@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
         cout << "La cantidad de parametros es incorrecta" << endl;
         cout << "1: path al archivo de entrada con los partidos y resultados de la competencia" << endl;
         cout << "2: salida con el ranking correspondiente" << endl;
-        cout << "3: metodo a considerar: 0 CMM, 1 WP, 2 alternativo" << endl;
+        cout << "3: metodo a considerar: 0 CMM, 1 WP, 2 justice, 3 elo" << endl;
         return 1;
     }
 
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
     } else if (params[2] == "3") {
         ranking = elo::calculateLeaderboard(teams, matches, resultMatrix);
     } else {
-        cout << "Metodo a considerar invalido. Los posibles son: 0 CMM, 1 WP, 2 alternativo" << endl;
+        cout << "Metodo a considerar invalido. Los posibles son: 0 CMM, 1 WP, 2 justice, 3 elo" << endl;
         return 1;
     }
 
