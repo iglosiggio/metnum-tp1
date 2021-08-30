@@ -14,17 +14,17 @@ vector<metnum_float_t> colleyMatrixMethod::calculateLeaderboard(const int teams,
 
     for (int i = 0; i < matches; ++i){
         if (resultMatrix[i][2] > resultMatrix[i][4]) {
-            wins[resultMatrix[i][1]-1]++;
-            losses[resultMatrix[i][3]-1]++;
+            wins[resultMatrix[i][1]]++;
+            losses[resultMatrix[i][3]]++;
         } else {
-            wins[resultMatrix[i][3]-1]++;
-            losses[resultMatrix[i][1]-1]++;
+            wins[resultMatrix[i][3]]++;
+            losses[resultMatrix[i][1]]++;
         }
-        C[resultMatrix[i][1]-1][resultMatrix[i][3]-1] -= 1;
-        C[resultMatrix[i][3]-1][resultMatrix[i][1]-1] -= 1;
+        C[resultMatrix[i][1]][resultMatrix[i][3]] -= 1;
+        C[resultMatrix[i][3]][resultMatrix[i][1]] -= 1;
 
-        C[resultMatrix[i][1]-1][resultMatrix[i][1]-1] += 1;
-        C[resultMatrix[i][3]-1][resultMatrix[i][3]-1] += 1;
+        C[resultMatrix[i][1]][resultMatrix[i][1]] += 1;
+        C[resultMatrix[i][3]][resultMatrix[i][3]] += 1;
     }
 
     vector<metnum_float_t> b(teams, 0);

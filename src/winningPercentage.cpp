@@ -7,13 +7,13 @@ vector<metnum_float_t> winningPercentage::calculateLeaderboard(const int teams, 
     vector<metnum_float_t> matchesPerTeam(teams, 0.0);
 
     for (int i = 0; i < matches; ++i) {
-        matchesPerTeam[resultMatrix[i][1]-1]++;
-        matchesPerTeam[resultMatrix[i][3]-1]++;
+        matchesPerTeam[resultMatrix[i][1]]++;
+        matchesPerTeam[resultMatrix[i][3]]++;
 
         if (resultMatrix[i][2] > resultMatrix[i][4]) {
-            results[resultMatrix[i][1]-1]++;
+            results[resultMatrix[i][1]]++;
         } else {
-            results[resultMatrix[i][3]-1]++;
+            results[resultMatrix[i][3]]++;
         }
     }
 

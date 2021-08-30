@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
+#include <algorithm>
 #include "config.h"
 #include "colleyMatrixMethod.h"
 #include "winningPercentage.h"
@@ -31,7 +33,7 @@ vector<vector<int>> readMatrixFromFile(const string filePath, int *teams, int *m
     return resultMatrix;
 }
 
-void saveRankingToFile(const vector<metnum_float_t> ranking, const string filePath) {
+void saveRankingToFile(const vector<metnum_float_t>& ranking, const string filePath) {
     vector<vector<int>> resultMatrix;
     ofstream file;
     file.open(filePath);
@@ -41,6 +43,30 @@ void saveRankingToFile(const vector<metnum_float_t> ranking, const string filePa
             file << ranking[i] << endl;
         }
     }
+}
+
+struct compressed_team_ids {
+    unordered_map<int, int> id_to_compressed;
+    vector<int> compressed_to_id;
+};
+struct compressed_team_ids compress_team_ids(const vector<vector<int>>& matches) {
+    unordered_map<int, int> id_to_compressed;
+    vector<int> compressed_to_id;
+    int last_team_id = 0;
+    bool inserted;
+    for (auto& match : matches) {
+        inserted = id_to_compressed.insert({match[1], last_team_id}).second;
+        if (inserted) {
+            last_team_id++;
+            compressed_to_id.push_back(match[1]);
+        }
+        inserted = id_to_compressed.insert({match[3], last_team_id}).second;
+        if (inserted) {
+            last_team_id++;
+            compressed_to_id.push_back(match[3]);
+        }
+    }
+    return { id_to_compressed, compressed_to_id };
 }
 
 int main(int argc, char* argv[]) {
@@ -58,6 +84,11 @@ int main(int argc, char* argv[]) {
     int matches = 0;
     vector<vector<int>> resultMatrix = readMatrixFromFile(params[0], &teams, &matches);
     vector<metnum_float_t> ranking;
+    auto team_ids = compress_team_ids(resultMatrix);
+    for (auto& match : resultMatrix) {
+        match[1] = team_ids.id_to_compressed[match[1]];
+        match[3] = team_ids.id_to_compressed[match[3]];
+    }
 
     if (params[2] == "0") {
         ranking = colleyMatrixMethod::calculateLeaderboard(teams, matches, resultMatrix);
@@ -72,5 +103,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    saveRankingToFile(ranking, params[1]);
+    vector<int> sorted_ids = team_ids.compressed_to_id;
+    vector<metnum_float_t> sorted_ranking(teams);
+    sort(sorted_ids.begin(), sorted_ids.end());
+    for (int i = 0; i < ranking.size(); i++)
+        sorted_ranking[i] = ranking[team_ids.id_to_compressed[sorted_ids[i]]];
+    saveRankingToFile(sorted_ranking, params[1]);
 }

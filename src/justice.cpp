@@ -19,24 +19,23 @@ vector<metnum_float_t> justice::calculateLeaderboard(const int teamQuantity, con
     vector<metnum_float_t> matchesRivals(teamQuantity, 0);
 
     for (int i = 0; i < matchesQuantity; ++i) {
-        matchesQuantityPerTeam[resultMatrix[i][1]-1]++;
-        matchesQuantityPerTeam[resultMatrix[i][3]-1]++;
+        matchesQuantityPerTeam[resultMatrix[i][1]]++;
+        matchesQuantityPerTeam[resultMatrix[i][3]]++;
 
         if (resultMatrix[i][2] > resultMatrix[i][4]) {
-            results[resultMatrix[i][1]-1]++;
+            results[resultMatrix[i][1]]++;
         } else {
-            results[resultMatrix[i][3]-1]++;
+            results[resultMatrix[i][3]]++;
         }
     }
 
     for (int i = 0; i < matchesQuantity; ++i) {
-
         if (resultMatrix[i][2] > resultMatrix[i][4]) {
-            matchesRivals[resultMatrix[i][1]-1]+=results[resultMatrix[i][3]-1]/matchesQuantityPerTeam[resultMatrix[i][3]-1];
-            matchesRivals[resultMatrix[i][3]-1]-=(1.0-results[resultMatrix[i][1]-1]/matchesQuantityPerTeam[resultMatrix[i][1]-1]);
+            matchesRivals[resultMatrix[i][1]]+=results[resultMatrix[i][3]]/matchesQuantityPerTeam[resultMatrix[i][3]];
+            matchesRivals[resultMatrix[i][3]]-=(1.0-results[resultMatrix[i][1]]/matchesQuantityPerTeam[resultMatrix[i][1]]);
         } else {
-            matchesRivals[resultMatrix[i][1]-1]-=(1.0-results[resultMatrix[i][3]-1]/matchesQuantityPerTeam[resultMatrix[i][3]-1]);
-            matchesRivals[resultMatrix[i][3]-1]+=(1.0-results[resultMatrix[i][1]-1]/matchesQuantityPerTeam[resultMatrix[i][3]-1]);
+            matchesRivals[resultMatrix[i][1]]-=(1.0-results[resultMatrix[i][3]]/matchesQuantityPerTeam[resultMatrix[i][3]]);
+            matchesRivals[resultMatrix[i][3]]+=(1.0-results[resultMatrix[i][1]]/matchesQuantityPerTeam[resultMatrix[i][3]]);
         }
     }
 

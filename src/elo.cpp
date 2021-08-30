@@ -15,30 +15,30 @@ Donde K es una constante que depende del elo del jugador:
 Mientras que el resultado puede ser 1 o 0 ya que no hay empates.    
 */
 vector<metnum_float_t> elo::calculateLeaderboard(const int teamQuantity, const int matchesQuantity, const vector<vector<int>>& resultMatrix) {
-    vector<metnum_float_t> elo(teamQuantity, 0);
+    vector<metnum_float_t> elo(teamQuantity, 1500);
 
     auto factorK = [](metnum_float_t elo) -> metnum_float_t {
         if (elo < 2100) return 32;
         if (elo > 2400) return 16;
         return 24;
     };
+    auto puntuar = [&](int i) -> metnum_float_t {
+        if (resultMatrix[i][2] > resultMatrix[i][4])
+            return 1;
+        else if (resultMatrix[i][2] == resultMatrix[i][4])
+            return 0.5;
+        return 0;
+    };
 
     for (int i = 0; i < matchesQuantity; ++i) {
-        metnum_float_t eloA = elo[resultMatrix[i][1]-1];
-        metnum_float_t eloB = elo[resultMatrix[i][3]-1];
-        metnum_float_t esperadoA = 1 / (1 + pow(10,((eloB-eloA)/400)));
-        metnum_float_t esperadoB = 1 / (1 + pow(10,((eloA-eloB)/400)));
+        metnum_float_t& eloA = elo[resultMatrix[i][1]];
+        metnum_float_t& eloB = elo[resultMatrix[i][3]];
 
-        if (resultMatrix[i][2] > resultMatrix[i][4]) {
-            //results[resultMatrix[i][1]-1]++;
-            elo[resultMatrix[i][1]-1] = eloA + factorK(eloA)*(1-esperadoA);
-            elo[resultMatrix[i][3]-1] = eloB + factorK(eloB)*(0-esperadoB);
-        } else {
-            //results[resultMatrix[i][3]-1]++;
-            elo[resultMatrix[i][1]-1] = eloA + factorK(eloA)*(0-esperadoA);
-            elo[resultMatrix[i][3]-1] = eloB + factorK(eloB)*(1-esperadoB);
-        }
+        metnum_float_t esperadoA = 1.0 / (1.0 + pow(10.0, ((eloB - eloA)/400.0)));
+        metnum_float_t puntosA = puntuar(i);
 
+        eloA += factorK(eloA) * (puntosA - esperadoA);
+        eloB += factorK(eloB) * (esperadoA - puntosA);
     }
 
     return elo;
