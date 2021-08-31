@@ -231,7 +231,13 @@ def sample_fifa_world_cup(player_elos, player_ids, starting_match_id=0):
 
 def write_matches_to(matches, filepath):
     """ Writes a list of matches to a file """
+    teams = set()
+    for match in matches:
+        teams.add(match[1])
+        teams.add(match[3])
+
     with open(filepath, 'w') as file:
+        file.write(f'{len(teams)} {len(matches)}\n')
         for (match_id, player_a, points_a, player_b, points_b) in matches:
             file.write(f'{match_id} {player_a} {points_a} {player_b} {points_b}\n')
 
@@ -239,7 +245,7 @@ def read_matches_from(filepath):
     """ Reads a list of matches from a file """
     matches = []
     with open(filepath, 'r') as file:
-        for line in file.readlines():
+        for line in file.readlines()[1:]:
             (match_id, player_a, points_a, player_b, points_b) = [int(v) for v in line.split(' ')]
             matches.append((match_id, player_a, points_a, player_b, points_b))
     return matches
