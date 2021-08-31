@@ -106,11 +106,15 @@ def sample_game(elo_player_a, elo_player_b):
     return (1, 0) if random.random() <= expected_a else (0, 1)
 
 def sample_player_order(player_elos):
+    """ Returns a random permutation of [0,1,...,len(player_elos)]"""
     result = list(range(len(player_elos)))
     random.shuffle(result)
     return result
 
 def sample_single_elimination_tournament(player_elos, player_ids):
+    """ Simulates a single-elimination tournament and returns the match
+        results
+    """
     assert len(player_elos) == len(player_ids)
     assert popcount(len(player_elos)) == 1
     num_players = len(player_ids)
@@ -129,7 +133,9 @@ def sample_single_elimination_tournament(player_elos, player_ids):
     return matches
 
 def sample_round_robin_tournament(player_elos, player_ids):
-    """ Round-robin tournament scheduling based on
+    """ Simulates a round-robin tournament and returns the match results.
+
+        The scheduling code is based on
         https://en.wikipedia.org/wiki/Round-robin_tournament#Circle_method
     """
     assert len(player_elos) == len(player_ids)
@@ -156,6 +162,9 @@ def sample_round_robin_tournament(player_elos, player_ids):
     return matches
 
 def sample_fifa_world_cup(player_elos, player_ids):
+    """ Simulates "FIFA World Cup (TM)"-like tournament (round-robin groups of
+        four + single-elimination) and returns the match results.
+    """
     assert len(player_elos) == len(player_ids)
     assert len(player_elos) == 32
     GROUP_SIZE = 4
@@ -216,13 +225,14 @@ def sample_fifa_world_cup(player_elos, player_ids):
     sample_match(W61, W62)
     return matches
 
-
 def write_matches_to(matches, filepath):
+    """ Writes a list of matches to a file """
     with open(filepath, 'w') as file:
         for (match_id, player_a, points_a, player_b, points_b) in matches:
             file.write(f'{match_id} {player_a} {points_a} {player_b} {points_b}\n')
 
 def read_matches_from(filepath):
+    """ Reads a list of matches from a file """
     matches = []
     with open(filepath, 'r') as file:
         for line in file.readlines():
