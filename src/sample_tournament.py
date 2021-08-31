@@ -111,7 +111,7 @@ def sample_player_order(player_elos):
     random.shuffle(result)
     return result
 
-def sample_single_elimination_tournament(player_elos, player_ids):
+def sample_single_elimination_tournament(player_elos, player_ids, starting_match_id=0):
     """ Simulates a single-elimination tournament and returns the match
         results
     """
@@ -123,7 +123,7 @@ def sample_single_elimination_tournament(player_elos, player_ids):
     while len(current_round) >= 2:
         winners = []
         while len(current_round) >= 2:
-            match_id = len(matches)
+            match_id = starting_match_id + len(matches)
             player_a = current_round.pop()
             player_b = current_round.pop()
             points_a, points_b = sample_game(player_elos[player_a], player_elos[player_b])
@@ -132,7 +132,7 @@ def sample_single_elimination_tournament(player_elos, player_ids):
         current_round.extend(winners)
     return matches
 
-def sample_round_robin_tournament(player_elos, player_ids):
+def sample_round_robin_tournament(player_elos, player_ids, starting_match_id=0):
     """ Simulates a round-robin tournament and returns the match results.
 
         The scheduling code is based on
@@ -155,38 +155,42 @@ def sample_round_robin_tournament(player_elos, player_ids):
         # n-1 n-2 n-3 n-4 ...
         second_half = team_order[-1:should_skip_first+half-1:-1]
         for (player_a, player_b) in zip(first_half, second_half):
-            match_id = len(matches)
+            match_id = starting_match_id + len(matches)
             points_a, points_b = sample_game(player_elos[player_a], player_elos[player_b])
             matches.append((match_id, player_ids[player_a], points_a, player_ids[player_b], points_b))
         team_order[1:] = team_order[-1:] + team_order[1:-1]
     return matches
 
-def sample_fifa_world_cup(player_elos, player_ids):
+def sample_group(group_num, group_size, player_elos, player_ids, matches, winners, starting_match_id):
+    """ Samples a round-robin subtournament for a list of players.
+
+        Returns the winners and appends all the played matches to `matches`
+    """
+    group_elos = player_elos[group_num * group_size: (group_num + 1) * group_size]
+    group_ids = player_ids[group_num * group_size: (group_num + 1) * group_size]
+    group_matches = sample_round_robin_tournament(group_elos, group_ids, starting_match_id)
+    matches.extend(group_matches)
+    points = { player_id: 0 for player_id in group_ids }
+    for (_, player_a, points_a, player_b, points_b) in group_matches:
+        if points_a > points_b:
+            points[player_a] += 3
+        elif points_a == points_b:
+            points[player_a] += 1
+            points[player_b] += 1
+        else:
+            points[player_b] += 3
+    # El desempate viene "por el orden dado en la lista" que suponemos
+    # aleatorio
+    sorted_ids = sorted(group_ids, key=lambda id: points[id])
+    return sorted_ids[:winners]
+
+def sample_fifa_world_cup(player_elos, player_ids, starting_match_id=0):
     """ Simulates "FIFA World Cup (TM)"-like tournament (round-robin groups of
         four + single-elimination) and returns the match results.
     """
     assert len(player_elos) == len(player_ids)
     assert len(player_elos) == 32
-    GROUP_SIZE = 4
     matches = []
-    def sample_group(group_num):
-        group_elos = player_elos[group_num * GROUP_SIZE: (group_num + 1) * GROUP_SIZE]
-        group_ids = player_ids[group_num * GROUP_SIZE: (group_num + 1) * GROUP_SIZE]
-        group_matches = sample_round_robin_tournament(group_elos, group_ids)
-        matches.extend(group_matches)
-        points = { player_id: 0 for player_id in group_ids }
-        for (_, player_a, points_a, player_b, points_b) in group_matches:
-            if points_a > points_b:
-                points[player_a] += 3
-            elif points_a == points_b:
-                points[player_a] += 1
-                points[player_b] += 1
-            else:
-                points[player_b] += 3
-        # El desempate viene "por el orden dado en la lista" que suponemos
-        # aleatorio
-        sorted_ids = sorted(group_ids, key=lambda id: points[id])
-        return sorted_ids[:2]
     def sample_match(player_a, player_b):
         match_id = len(matches)
         points_a, points_b = sample_game(player_elos[player_a], player_elos[player_b])
@@ -194,14 +198,14 @@ def sample_fifa_world_cup(player_elos, player_ids):
         return (player_a, player_b) if points_a > points_b else (player_b, player_a)
     # Basado en https://www.fifa.com/tournaments/mens/worldcup/qatar2022
     # 1. Fase de grupos
-    A1, A2 = sample_group(0)
-    B1, B2 = sample_group(1)
-    C1, C2 = sample_group(2)
-    D1, D2 = sample_group(3)
-    E1, E2 = sample_group(4)
-    F1, F2 = sample_group(5)
-    G1, G2 = sample_group(6)
-    H1, H2 = sample_group(7)
+    A1, A2 = sample_group(0, 4, player_elos, player_ids, matches, 2, starting_match_id + len(matches))
+    B1, B2 = sample_group(1, 4, player_elos, player_ids, matches, 2, starting_match_id + len(matches))
+    C1, C2 = sample_group(2, 4, player_elos, player_ids, matches, 2, starting_match_id + len(matches))
+    D1, D2 = sample_group(3, 4, player_elos, player_ids, matches, 2, starting_match_id + len(matches))
+    E1, E2 = sample_group(4, 4, player_elos, player_ids, matches, 2, starting_match_id + len(matches))
+    F1, F2 = sample_group(5, 4, player_elos, player_ids, matches, 2, starting_match_id + len(matches))
+    G1, G2 = sample_group(6, 4, player_elos, player_ids, matches, 2, starting_match_id + len(matches))
+    H1, H2 = sample_group(7, 4, player_elos, player_ids, matches, 2, starting_match_id + len(matches))
     # 2. Octavos
     W49, _ = sample_match(A1, B2)
     W50, _ = sample_match(C1, D2)
