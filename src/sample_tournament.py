@@ -97,75 +97,79 @@ def popcount(v):
         v >>= 1
     return result
 
-def sample_single_elimination_tournament(number_of_teams):
-    assert popcount(number_of_teams) == 1
-    current_round = list(range(number_of_teams))
-    random.shuffle(current_round)
+def sample_game(elo_player_a, elo_player_b):
+    """ Simulates a game between A and B according to their ELO scores.
+
+        Returns a (points_player_a, points_player_b) tuple.
+    """
+    expected_a = 1 / (1 + 10**((elo_player_b - elo_player_a) / 400))
+    return (1, 0) if random.random() <= expected_a else (0, 1)
+
+def sample_player_order(player_elos):
+    result = list(range(len(player_elos)))
+    random.shuffle(result)
+    return result
+
+def sample_single_elimination_tournament(player_elos, player_ids):
+    assert len(player_elos) == len(player_ids)
+    assert popcount(len(player_elos)) == 1
+    current_round = player_ids.copy()
     matches = []
     while len(current_round) >= 2:
-        first_match_of_round = -len(matches)-1
+        winners = []
         while len(current_round) >= 2:
-            match = (current_round.pop(), current_round.pop())
-            matches.append(match)
-        last_match_of_round = -len(matches)
-        matches_played = range(first_match_of_round, last_match_of_round-1, -1)
-        current_round.extend(matches_played)
+            match_id = len(matches)
+            player_a = current_round.pop()
+            player_b = current_round.pop()
+            a_wins = sample_game(player_elos[player_a], player_elos[player_b])
+            points_a = 1 if a_wins else 0
+            points_b = 0 if a_wins else 1
+            matches.append((match_id, player_a, points_a, player_b, points_b))
+            winners.append(player_a if a_wins else player_b)
+        current_round.extend(winners)
     return matches
 
-def sample_round_robin_tournament(number_of_teams):
+def sample_round_robin_tournament(player_elos, player_ids):
     """ Round-robin tournament scheduling based on
         https://en.wikipedia.org/wiki/Round-robin_tournament#Circle_method
     """
-    team_order = list(range(number_of_teams))
-    number_of_rounds = number_of_teams - 1
+    assert len(player_elos) == len(player_ids)
+    num_players = len(player_ids)
+    team_order = list(range(num_players))
+    number_of_rounds = num_players - 1
     should_skip_first = 0
-    random.shuffle(team_order)
-    if number_of_teams % 2 == 1:
-        team_order.insert(0, number_of_teams)
-        number_of_rounds = number_of_teams
+    if num_players % 2 == 1:
+        team_order.insert(0, num_players)
+        number_of_rounds = num_players
         should_skip_first = 1
     matches = []
-    for round in range(number_of_rounds):
-        half = (number_of_teams + 1) // 2
+    for _ in range(number_of_rounds):
+        half = (num_players + 1) // 2
         # 0   1   2   3 4 ...
         first_half = team_order[should_skip_first:half]
         # n-1 n-2 n-3 n-4 ...
         second_half = team_order[-1:should_skip_first+half-1:-1]
-        matches.extend(zip(first_half, second_half))
+        for (player_a, player_b) in zip(first_half, second_half):
+            match_id = len(matches)
+            a_wins = sample_game(player_elos[player_a], player_elos[player_b])
+            points_a = 1 if a_wins else 0
+            points_b = 0 if a_wins else 1
+            matches.append((match_id, player_a, points_a, player_b, points_b))
         team_order[1:] = team_order[-1:] + team_order[1:-1]
     return matches
 
-def write_tournament_to(tournament, filepath):
+def write_matches_to(tournament, filepath):
     with open(filepath, 'w') as file:
-        for (home_team_ref, visiting_team_ref) in tournament:
-            file.write(f'{home_team_ref} {visiting_team_ref}\n')
+        for (match_id, player_a, points_a, player_b, points_b) in tournament:
+            file.write(f'{match_id} {player_a} {points_a} {player_b} {points_b}\n')
 
-def read_tournament_from(filepath):
+def read_matches_from(filepath):
     matches = []
     with open(filepath, 'r') as file:
         for line in file.readlines():
-            (home_team_ref, sep, visiting_team_ref) = line.partition(' ')
-            assert sep != ''
-            home_team_ref = int(home_team_ref)
-            visiting_team_ref = int(visiting_team_ref)
-            matches.append((home_team_ref, visiting_team_ref))
+            (match_id, player_a, points_a, player_b, points_b) = [int(v) for v in line.split(' ')]
+            matches.append((match_id, player_a, points_a, player_b, points_b))
     return matches
-
-def tournament_to_dotfile(tournament):
-    vertices = set(range(-1, -len(tournament)-1, -1))
-    result = 'digraph {\n'
-    for match_id, (home_team_ref, visiting_team_ref) in enumerate(tournament):
-        result += f'"{home_team_ref}" -> "{-match_id-1}"\n'
-        result += f'"{visiting_team_ref}" -> "{-match_id-1}"\n'
-        vertices.add(home_team_ref)
-        vertices.add(visiting_team_ref)
-    for v in vertices:
-        if v < 0:
-            result += f'"{v}" [label="Match {-v}", shape=circle]\n'
-        else:
-            result += f'"{v}" [label="Team {v}"]\n'
-    result += '}\n'
-    return result
 
 if __name__ == '__main__':
     print('Aún no terminé el script...')
@@ -173,26 +177,26 @@ if __name__ == '__main__':
 
     print('1. Samplear poblaciones de jugadores')
     elo_distribution = lambda: random.gauss(1500, 400)
-    teams = sample_players(elo_distribution, 128)
+    players_128 = sample_players(elo_distribution, 128)
     print('Creados 128 jugadores desde una normal')
-    write_players_to(teams, 'players.txt')
+    write_players_to(players_128, 'players.txt')
     print('Escritos en players.txt, chequeando que se puedan leer...')
-    assert read_players_from('players.txt') == teams
+    assert read_players_from('players.txt') == players_128
 
     print('2. Crear torneos de eliminación simple')
-    single_elimination_128 = sample_single_elimination_tournament(128)
-    single_elimination_16 = sample_single_elimination_tournament(16)
-    write_tournament_to(single_elimination_128, 'single-elimination-128.txt')
-    write_tournament_to(single_elimination_16, 'single-elimination-16.txt')
+    single_elimination_128 = sample_single_elimination_tournament(players_128, sample_player_order(players_128))
+    single_elimination_16 = sample_single_elimination_tournament(players_128[:16], sample_player_order(players_128[:16]))
+    write_matches_to(single_elimination_128, 'single-elimination-128.txt')
+    write_matches_to(single_elimination_16, 'single-elimination-16.txt')
     print('Escritos en single-elimination-{128,16}.txt, chequeando que se puedan leer...')
-    assert read_tournament_from('single-elimination-128.txt') == single_elimination_128
-    assert read_tournament_from('single-elimination-16.txt') == single_elimination_16
+    assert read_matches_from('single-elimination-128.txt') == single_elimination_128
+    assert read_matches_from('single-elimination-16.txt') == single_elimination_16
 
     print('3. Creando ligas')
-    round_robin_30 = sample_round_robin_tournament(30)
-    round_robin_11 = sample_round_robin_tournament(11)
-    write_tournament_to(round_robin_30, 'round-robin-30.txt')
-    write_tournament_to(round_robin_11, 'round-robin-11.txt')
+    round_robin_30 = sample_round_robin_tournament(players_128[:30], sample_player_order(players_128[:30]))
+    round_robin_11 = sample_round_robin_tournament(players_128[:11], sample_player_order(players_128[:11]))
+    write_matches_to(round_robin_30, 'round-robin-30.txt')
+    write_matches_to(round_robin_11, 'round-robin-11.txt')
     print('Escritos en round-robin-{30,11}.txt, chequeando que se puedan leer...')
-    assert read_tournament_from('round-robin-30.txt') == round_robin_30
-    assert read_tournament_from('round-robin-11.txt') == round_robin_11
+    assert read_matches_from('round-robin-30.txt') == round_robin_30
+    assert read_matches_from('round-robin-11.txt') == round_robin_11
