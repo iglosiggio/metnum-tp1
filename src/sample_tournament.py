@@ -113,7 +113,8 @@ def sample_player_order(player_elos):
 def sample_single_elimination_tournament(player_elos, player_ids):
     assert len(player_elos) == len(player_ids)
     assert popcount(len(player_elos)) == 1
-    current_round = player_ids.copy()
+    num_players = len(player_ids)
+    current_round = list(range(num_players))
     matches = []
     while len(current_round) >= 2:
         winners = []
@@ -121,11 +122,9 @@ def sample_single_elimination_tournament(player_elos, player_ids):
             match_id = len(matches)
             player_a = current_round.pop()
             player_b = current_round.pop()
-            a_wins = sample_game(player_elos[player_a], player_elos[player_b])
-            points_a = 1 if a_wins else 0
-            points_b = 0 if a_wins else 1
-            matches.append((match_id, player_a, points_a, player_b, points_b))
-            winners.append(player_a if a_wins else player_b)
+            points_a, points_b = sample_game(player_elos[player_a], player_elos[player_b])
+            matches.append((match_id, player_ids[player_a], points_a, player_ids[player_b], points_b))
+            winners.append(player_a if points_a > points_b else player_b)
         current_round.extend(winners)
     return matches
 
@@ -151,16 +150,76 @@ def sample_round_robin_tournament(player_elos, player_ids):
         second_half = team_order[-1:should_skip_first+half-1:-1]
         for (player_a, player_b) in zip(first_half, second_half):
             match_id = len(matches)
-            a_wins = sample_game(player_elos[player_a], player_elos[player_b])
-            points_a = 1 if a_wins else 0
-            points_b = 0 if a_wins else 1
-            matches.append((match_id, player_a, points_a, player_b, points_b))
+            points_a, points_b = sample_game(player_elos[player_a], player_elos[player_b])
+            matches.append((match_id, player_ids[player_a], points_a, player_ids[player_b], points_b))
         team_order[1:] = team_order[-1:] + team_order[1:-1]
     return matches
 
-def write_matches_to(tournament, filepath):
+def sample_fifa_world_cup(player_elos, player_ids):
+    assert len(player_elos) == len(player_ids)
+    assert len(player_elos) == 32
+    GROUP_SIZE = 4
+    matches = []
+    def sample_group(group_num):
+        group_elos = player_elos[group_num * GROUP_SIZE: (group_num + 1) * GROUP_SIZE]
+        group_ids = player_ids[group_num * GROUP_SIZE: (group_num + 1) * GROUP_SIZE]
+        group_matches = sample_round_robin_tournament(group_elos, group_ids)
+        matches.extend(group_matches)
+        points = { player_id: 0 for player_id in group_ids }
+        for (_, player_a, points_a, player_b, points_b) in group_matches:
+            if points_a > points_b:
+                points[player_a] += 3
+            elif points_a == points_b:
+                points[player_a] += 1
+                points[player_b] += 1
+            else:
+                points[player_b] += 3
+        # El desempate viene "por el orden dado en la lista" que suponemos
+        # aleatorio
+        sorted_ids = sorted(group_ids, key=lambda id: points[id])
+        return sorted_ids[:2]
+    def sample_match(player_a, player_b):
+        match_id = len(matches)
+        points_a, points_b = sample_game(player_elos[player_a], player_elos[player_b])
+        matches.append((match_id, player_a, points_a, player_b, points_b))
+        return (player_a, player_b) if points_a > points_b else (player_b, player_a)
+    # Basado en https://www.fifa.com/tournaments/mens/worldcup/qatar2022
+    # 1. Fase de grupos
+    A1, A2 = sample_group(0)
+    B1, B2 = sample_group(1)
+    C1, C2 = sample_group(2)
+    D1, D2 = sample_group(3)
+    E1, E2 = sample_group(4)
+    F1, F2 = sample_group(5)
+    G1, G2 = sample_group(6)
+    H1, H2 = sample_group(7)
+    # 2. Octavos
+    W49, _ = sample_match(A1, B2)
+    W50, _ = sample_match(C1, D2)
+    W51, _ = sample_match(D1, C2)
+    W52, _ = sample_match(B1, A2)
+    W53, _ = sample_match(E1, F2)
+    W54, _ = sample_match(G1, H2)
+    W55, _ = sample_match(F1, E2)
+    W56, _ = sample_match(H1, G2)
+    # 3. Cuartos
+    W57, _ = sample_match(W53, W54)
+    W58, _ = sample_match(W49, W50)
+    W59, _ = sample_match(W55, W56)
+    W60, _ = sample_match(W51, W52)
+    # 4. Semis
+    W61, RU61 = sample_match(W57, W58)
+    W62, RU62 = sample_match(W59, W60)
+    # 5. Tercer lugar
+    sample_match(RU61, RU62)
+    # 6. Final
+    sample_match(W61, W62)
+    return matches
+
+
+def write_matches_to(matches, filepath):
     with open(filepath, 'w') as file:
-        for (match_id, player_a, points_a, player_b, points_b) in tournament:
+        for (match_id, player_a, points_a, player_b, points_b) in matches:
             file.write(f'{match_id} {player_a} {points_a} {player_b} {points_b}\n')
 
 def read_matches_from(filepath):
@@ -200,3 +259,8 @@ if __name__ == '__main__':
     print('Escritos en round-robin-{30,11}.txt, chequeando que se puedan leer...')
     assert read_matches_from('round-robin-30.txt') == round_robin_30
     assert read_matches_from('round-robin-11.txt') == round_robin_11
+
+    print('4. Creando un torneo a-la-FIFA')
+    fifa = sample_fifa_world_cup(players_128[:32], sample_player_order(players_128[:32]))
+    write_matches_to(fifa, 'fifa.txt')
+    assert read_matches_from('fifa.txt') == fifa
