@@ -1,77 +1,4 @@
-""" Inputs:
-    1. Distribución de las capacidades de los jugadores (default=gauss:1500,500)
-    2. Cantidad de equipos
-    3. Tipo de torneo a samplear:
-        * Eliminación directa
-        * Liga de n partidos (default=1)
-        * Fase de grupos + Eliminación directa (las hojas del árbol de
-          eliminación directa son ligas pequeñas, cómo la copa mundial FIFA).
-        * Jerarquía de ligas (es decir, hay un árbol de ligas de el que
-          siempre pasan los n mejores)
-    4. Cantidad de torneos a simular
-    Outputs:
-    1. ground_truth.txt: Los scores generados para cada equipo
-    2. schedule.txt: El torneo generado
-    3. matches_N.txt: Los resultados del torneo
-"""
-
 import random
-
-# List from https://docs.python.org/3/library/random.html#real-valued-distributions
-real_valued_distributions = {
-    'random': random.random,
-    'uniform': random.uniform,
-    'triangular': random.triangular,
-    'betavariate': random.betavariate,
-    'expovariate': random.expovariate,
-    'gammavariate': random.gammavariate,
-    'gauss': random.gauss,
-    'lognormvariate': random.lognormvariate,
-    'normalvariate': random.normalvariate,
-    'vonmisesvariate': random.vonmisesvariate,
-    'paretovariate': random.paretovariate,
-    'weibullvariate': random.weibullvariate,
-}
-def sample_real(dist_name, *args, **kwargs):
-    if dist_name not in real_valued_distributions:
-        raise ValueError('The requested distribution is not implemented')
-    return real_valued_distributions[dist_name](*args, **kwargs)
-
-def parse_dist_arg(arg):
-    """ Parses a distribution argument.
-
-        Distribution arguments have the following shape:
-
-        ```
-            <distribution> := <dist_name> [':' <arg_list>]
-                <arg_list> := <arg> [',' <arg_list>]
-                     <arg> := [<arg_name> '='] <FLOAT>
-               <dist_name> := <STRING>
-                <arg_name> := <STRING>
-        ```
-
-        Returns a (dist_name, args, kwargs) triplet.
-    """
-    (dist_name, sep, all_args) = arg.partition(':')
-    dist_name = dist_name.strip()
-    all_args = all_args.strip()
-    assert all_args != '' or sep == ''
-    if sep == '':
-        return (dist_name, [], {})
-    assert all_args.find(':') == -1
-    all_args = [arg for arg in all_args.split(',')]
-    assert '' not in all_args
-    args = []
-    kwargs = {}
-    for arg in all_args:
-        (param_name, sep, value) = arg.partition('=')
-        param_name = param_name.strip()
-        value = value.strip()
-        assert value == '' or sep == '='
-        value = float(value) if sep != '' else float(param_name)
-        if sep == '': args.append(value)
-        else: kwargs[param_name] = value
-    return (dist_name, args, kwargs)
 
 def sample_players(distribution, number_of_teams):
     """ Given a distribution function sample a list of teams """
@@ -251,36 +178,42 @@ def read_matches_from(filepath):
     return matches
 
 if __name__ == '__main__':
-    print('Aún no terminé el script...')
     print('Corriendo un par de pruebas')
 
-    print('1. Samplear poblaciones de jugadores')
+    print('1... Crear pool de jugadores (experimental-data/players.txt)')
     elo_distribution = lambda: random.gauss(1500, 400)
-    players_128 = sample_players(elo_distribution, 128)
-    print('Creados 128 jugadores desde una normal')
-    write_players_to(players_128, 'players.txt')
-    print('Escritos en players.txt, chequeando que se puedan leer...')
-    assert read_players_from('players.txt') == players_128
+    players_1024 = sample_players(elo_distribution, 1024)
+    write_players_to(players_1024, 'experimental-data/players.txt')
 
-    print('2. Crear torneos de eliminación simple')
-    single_elimination_128 = sample_single_elimination_tournament(players_128, sample_player_order(players_128))
-    single_elimination_16 = sample_single_elimination_tournament(players_128[:16], sample_player_order(players_128[:16]))
-    write_matches_to(single_elimination_128, 'single-elimination-128.txt')
-    write_matches_to(single_elimination_16, 'single-elimination-16.txt')
-    print('Escritos en single-elimination-{128,16}.txt, chequeando que se puedan leer...')
-    assert read_matches_from('single-elimination-128.txt') == single_elimination_128
-    assert read_matches_from('single-elimination-16.txt') == single_elimination_16
+    print('2... Crear torneos de eliminación simple')
+    print('2.1. Simulando 100 torneos distintos (shuffled-single-elimination-{0..99}.txt)')
+    for i in range(100):
+        tournament = sample_single_elimination_tournament(players_1024, sample_player_order(players_1024))
+        write_matches_to(tournament, f'experimental-data/shuffled-single-elimination-{i}.txt')
+    print('2.2. Simulando 100 veces el mismo torneo (same-single-elimination-{0..99}.txt)')
+    player_order = sample_player_order(players_1024)
+    for i in range(100):
+        tournament = sample_single_elimination_tournament(players_1024, player_order)
+        write_matches_to(tournament, f'experimental-data/same-single-elimination-{i}.txt')
 
-    print('3. Creando ligas')
-    round_robin_30 = sample_round_robin_tournament(players_128[:30], sample_player_order(players_128[:30]))
-    round_robin_11 = sample_round_robin_tournament(players_128[:11], sample_player_order(players_128[:11]))
-    write_matches_to(round_robin_30, 'round-robin-30.txt')
-    write_matches_to(round_robin_11, 'round-robin-11.txt')
-    print('Escritos en round-robin-{30,11}.txt, chequeando que se puedan leer...')
-    assert read_matches_from('round-robin-30.txt') == round_robin_30
-    assert read_matches_from('round-robin-11.txt') == round_robin_11
+    print('3... Creando ligas')
+    print('3.1. Simulando 100 torneos distintos (shuffled-round-robin-{0..99}.txt)')
+    for i in range(100):
+        tournament = sample_round_robin_tournament(players_1024, sample_player_order(players_1024))
+        write_matches_to(tournament, f'experimental-data/shuffled-round-robin-{i}.txt')
+    print('3.2. Simulando 100 veces el mismo torneo (same-round-robin-{0..99}.txt)')
+    player_order = sample_player_order(players_1024)
+    for i in range(100):
+        tournament = sample_round_robin_tournament(players_1024, player_order)
+        write_matches_to(tournament, f'experimental-data/same-round-robin-{i}.txt')
 
-    print('4. Creando un torneo a-la-FIFA')
-    fifa = sample_fifa_world_cup(players_128[:32], sample_player_order(players_128[:32]))
-    write_matches_to(fifa, 'fifa.txt')
-    assert read_matches_from('fifa.txt') == fifa
+    print('4... Creando torneos a-la-FIFA (usan los 32 primeros equipos)')
+    print('4.1. Simulando 100 torneos distintos (shuffled-fifa-{0..99}.txt)')
+    for i in range(100):
+        tournament = sample_fifa_world_cup(players_1024[:32], sample_player_order(players_1024[:32]))
+        write_matches_to(tournament, f'experimental-data/shuffled-fifa-{i}.txt')
+    print('4.2. Simulando 100 veces el mismo torneo (same-fifa-{0..99}.txt)')
+    player_order = sample_player_order(players_1024[:32])
+    for i in range(100):
+        tournament = sample_fifa_world_cup(players_1024[:32], player_order)
+        write_matches_to(tournament, f'experimental-data/same-fifa-{i}.txt')
