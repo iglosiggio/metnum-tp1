@@ -180,9 +180,9 @@ def sample_group(group_num, group_size, player_elos, player_ids, matches, winner
         else:
             points[player_b] += 3
     # El desempate viene "por el orden dado en la lista" que suponemos
-    # aleatorio
+    # aleatorio (esto vale porque `sorted` es estable!)
     sorted_ids = sorted(group_ids, key=lambda id: points[id])
-    return sorted_ids[:winners]
+    return sorted_ids[-winners:]
 
 def sample_fifa_world_cup(player_elos, player_ids, starting_match_id=0):
     """ Simulates "FIFA World Cup (TM)"-like tournament (round-robin groups of
