@@ -178,6 +178,25 @@ def read_matches_from(filepath):
     return matches
 
 if __name__ == '__main__':
+    from sys import stdout
+
+    random.seed(0xCAFECAFE) # Así a todos nos da lo mismo el script
+
+    try:
+        from os import mkdir
+        mkdir('experimental-data')
+    except FileExistsError:
+        pass
+
+    def sample_tournaments(name, amount, callback):
+        from sys import stdout
+        for i in range(100):
+            stdout.write('.')
+            stdout.flush()
+            write_matches_to(callback(), f'experimental-data/{name}-{i}.txt')
+        stdout.write('\n')
+        stdout.flush()
+
     print('Corriendo un par de pruebas')
 
     print('1... Crear pool de jugadores (experimental-data/players.txt)')
@@ -187,33 +206,21 @@ if __name__ == '__main__':
 
     print('2... Crear torneos de eliminación simple')
     print('2.1. Simulando 100 torneos distintos (shuffled-single-elimination-{0..99}.txt)')
-    for i in range(100):
-        tournament = sample_single_elimination_tournament(players_1024, sample_player_order(players_1024))
-        write_matches_to(tournament, f'experimental-data/shuffled-single-elimination-{i}.txt')
+    sample_tournaments('shuffled-single-elimination', 100, lambda: sample_single_elimination_tournament(players_1024, sample_player_order(players_1024)))
     print('2.2. Simulando 100 veces el mismo torneo (same-single-elimination-{0..99}.txt)')
     player_order = sample_player_order(players_1024)
-    for i in range(100):
-        tournament = sample_single_elimination_tournament(players_1024, player_order)
-        write_matches_to(tournament, f'experimental-data/same-single-elimination-{i}.txt')
+    sample_tournaments('same-single-elimination', 100, lambda: sample_single_elimination_tournament(players_1024, player_order))
 
     print('3... Creando ligas')
     print('3.1. Simulando 100 torneos distintos (shuffled-round-robin-{0..99}.txt)')
-    for i in range(100):
-        tournament = sample_round_robin_tournament(players_1024, sample_player_order(players_1024))
-        write_matches_to(tournament, f'experimental-data/shuffled-round-robin-{i}.txt')
+    sample_tournaments('shuffled-round-robin', 100, lambda: sample_round_robin_tournament(players_1024, sample_player_order(players_1024)))
     print('3.2. Simulando 100 veces el mismo torneo (same-round-robin-{0..99}.txt)')
+    sample_tournaments('same-round-robin', 100, lambda: sample_round_robin_tournament(players_1024, player_order))
     player_order = sample_player_order(players_1024)
-    for i in range(100):
-        tournament = sample_round_robin_tournament(players_1024, player_order)
-        write_matches_to(tournament, f'experimental-data/same-round-robin-{i}.txt')
 
     print('4... Creando torneos a-la-FIFA (usan los 32 primeros equipos)')
     print('4.1. Simulando 100 torneos distintos (shuffled-fifa-{0..99}.txt)')
-    for i in range(100):
-        tournament = sample_fifa_world_cup(players_1024[:32], sample_player_order(players_1024[:32]))
-        write_matches_to(tournament, f'experimental-data/shuffled-fifa-{i}.txt')
+    sample_tournaments('shuffled-fifa', 100, lambda: sample_fifa_world_cup(players_1024[:32], sample_player_order(players_1024[:32])))
     print('4.2. Simulando 100 veces el mismo torneo (same-fifa-{0..99}.txt)')
     player_order = sample_player_order(players_1024[:32])
-    for i in range(100):
-        tournament = sample_fifa_world_cup(players_1024[:32], player_order)
-        write_matches_to(tournament, f'experimental-data/same-fifa-{i}.txt')
+    sample_tournaments('same-fifa', 100, lambda: sample_fifa_world_cup(players_1024[:32], player_order))
