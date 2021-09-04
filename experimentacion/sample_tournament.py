@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import random
 
 def sample_players(distribution, number_of_teams):
