@@ -60,6 +60,7 @@ def comparar_resultados(test_name):
     return (absdiffs_mean, absdiffs_stddev, absdiffs_min, absdiffs_max, diffs)
 
 if __name__ == '__main__':
+    all_diffs = []
     for test in TESTS:
         print(f'=== {test} ===')
         cmp = comparar_resultados(test)
@@ -67,3 +68,17 @@ if __name__ == '__main__':
         print(f'Desviación estándar: {cmp[1]}')
         print(f'Error más chico:     {cmp[2]}')
         print(f'Error más grande:    {cmp[3]}')
+        all_diffs.extend(cmp[4])
+
+    try:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+
+        histplot = sns.histplot(data=all_diffs, bins=1024)
+        histplot.set_ylabel('#valores en el rango')
+        histplot.set_xlabel('cátedra - nuestro')
+        histplot.get_figure().savefig('error_histogram.pdf')
+
+        plt.show()
+    except ModuleNotFoundError:
+        print('!! Instale seaborn para ver los gráficos')
