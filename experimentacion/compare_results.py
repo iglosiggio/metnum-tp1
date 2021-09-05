@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Ejecuta nuestra implementación de CMM y compara los resultados con los
 ofrecidos por la cátedra
