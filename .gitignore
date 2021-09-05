@@ -40,3 +40,6 @@ __pycache__/
 # CMake
 CMake*.txt
 cmake-build-*/
+
+# Experimentation
+experimental-data
