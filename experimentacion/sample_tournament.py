@@ -54,8 +54,10 @@ def sample_single_elimination_tournament(player_elos, player_ids, starting_match
             match_id = starting_match_id + len(matches)
             player_a = current_round.pop()
             player_b = current_round.pop()
-            points_a, points_b = sample_game(player_elos[player_a], player_elos[player_b])
-            matches.append((match_id, player_ids[player_a], points_a, player_ids[player_b], points_b))
+            player_a_id = player_ids[player_a]
+            player_b_id = player_ids[player_b]
+            points_a, points_b = sample_game(player_elos[player_a_id], player_elos[player_b_id])
+            matches.append((match_id, player_a_id, points_a, player_b_id, points_b))
             winners.append(player_a if points_a > points_b else player_b)
         current_round.extend(winners)
     return matches
@@ -66,7 +68,7 @@ def sample_round_robin_tournament(player_elos, player_ids, starting_match_id=0):
         The scheduling code is based on
         https://en.wikipedia.org/wiki/Round-robin_tournament#Circle_method
     """
-    assert len(player_elos) == len(player_ids)
+    assert len(player_elos) >= len(player_ids)
     num_players = len(player_ids)
     team_order = list(range(num_players))
     number_of_rounds = num_players - 1
@@ -84,8 +86,10 @@ def sample_round_robin_tournament(player_elos, player_ids, starting_match_id=0):
         second_half = team_order[-1:should_skip_first+half-1:-1]
         for (player_a, player_b) in zip(first_half, second_half):
             match_id = starting_match_id + len(matches)
-            points_a, points_b = sample_game(player_elos[player_a], player_elos[player_b])
-            matches.append((match_id, player_ids[player_a], points_a, player_ids[player_b], points_b))
+            player_a_id = player_ids[player_a]
+            player_b_id = player_ids[player_b]
+            points_a, points_b = sample_game(player_elos[player_a_id], player_elos[player_b_id])
+            matches.append((match_id, player_a_id, points_a, player_b_id, points_b))
         team_order[1:] = team_order[-1:] + team_order[1:-1]
     return matches
 
@@ -94,9 +98,8 @@ def sample_group(group_num, group_size, player_elos, player_ids, matches, winner
 
         Returns the winners and appends all the played matches to `matches`
     """
-    group_elos = player_elos[group_num * group_size: (group_num + 1) * group_size]
     group_ids = player_ids[group_num * group_size: (group_num + 1) * group_size]
-    group_matches = sample_round_robin_tournament(group_elos, group_ids, starting_match_id)
+    group_matches = sample_round_robin_tournament(player_elos, group_ids, starting_match_id)
     matches.extend(group_matches)
     points = { player_id: 0 for player_id in group_ids }
     for (_, player_a, points_a, player_b, points_b) in group_matches:
