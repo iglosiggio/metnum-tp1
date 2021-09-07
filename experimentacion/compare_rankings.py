@@ -73,8 +73,11 @@ def compare_all():
 
     for dirname, _, filenames in os.walk('experimental-results-f64'):
         for filename in filenames:
-            if filename.startswith('shuffled-single-elimination') \
-               or filename.startswith('shuffled-round-robin'):
+            if 'fifa' in filename:
+                scores_nuestros = read_players_from(os.path.join(dirname, filename))
+                correlacion = compare_rankings(scores_posta[:32], scores_nuestros)
+                print(correlacion, filename)
+            else:
                 scores_nuestros = read_players_from(os.path.join(dirname, filename))
                 correlacion = compare_rankings(scores_posta, scores_nuestros)
                 print(correlacion, filename)
