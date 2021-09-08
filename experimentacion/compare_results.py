@@ -84,7 +84,7 @@ def main():
         g.savefig('error_histogram.pdf')
         g.set_titles('\n\n{col_name}')
 
-        plt.show()
+        #plt.show()
     except ModuleNotFoundError:
         print('!! Instale seaborn y pandas para ver los gráficos')
 

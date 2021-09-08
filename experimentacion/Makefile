@@ -12,7 +12,8 @@ BINARIOS = tp.f64 optimize-wins
 
 GRAFICOS = strategic_wins.pdf shuffled_single_3.pdf \
            shuffled_round_robin_42.pdf big_shuffled_single.pdf \
-           big_same_single.pdf all_correlations.pdf
+           big_same_single.pdf all_correlations.pdf \
+           error_histogram.pdf
 
 all: $(BINARIOS) $(GRAFICOS)
 
@@ -43,6 +44,7 @@ experimental-results-f64: experimental-data tp.f64
 	./run_all.sh
 
 experimental-results-f64/%: experimental-results-f64
+	#
 
 correlations.txt: experimental-results-f64
 	./compare_rankings.py --compare-all > correlations.txt
@@ -76,6 +78,9 @@ strategic_wins.pdf: experimental-data naive-opt.txt
 
 all_correlations.pdf: correlations.txt
 	./grafico_correlacion_segun_torneo.py
+
+error_histogram.pdf: tp.f64
+	./compare_results.py
 
 shuffled_single_3.pdf shuffled_round_robin_42.pdf big_shuffled_single.pdf big_same_single.pdf: \
   experimental-data                                              \
