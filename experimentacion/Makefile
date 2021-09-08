@@ -38,6 +38,7 @@ naive-opt.txt: optimize-wins experimental-data
 	@echo ./optimize-wins 15 experimental-data/shuffled-round-robin-16.txt > naive-opt.txt
 
 big-tournaments/big-%.txt: experimental-data
+	mkdir -p big-tournaments
 	./concat_inputs.py experimental-data/$**.txt > $@
 
 big-tournaments/big-%.cmm: big-tournaments/big-%.txt tp.f64
