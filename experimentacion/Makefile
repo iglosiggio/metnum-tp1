@@ -27,6 +27,61 @@ OBJS_64=../src/colleyMatrixMethod.cpp \
                        ../src/elo.cpp
 optimize-wins: $(OBJS_64)
 
+correlations.txt: experimental-results-f64
+	./compare_rankings.py --compare-all > correlations.txt
+
+experimental-results-f64: experimental-data tp.f64
+	./run_all.sh
+
+naive-opt.txt: optimize-wins experimental-data
+	@echo "Éste es un proceso muy largo, si lo querés correr de verdad ejecutá:"
+	@echo ./optimize-wins 15 experimental-data/shuffled-round-robin-16.txt > naive-opt.txt
+
+big-tournaments/big-%.txt: experimental-data
+	./concat_inputs.py experimental-data/$**.txt > $@
+
+big-tournaments/big-%.cmm: big-tournaments/big-%.txt tp.f64
+	./tp.f64 $< $@ 0
+
+big-tournaments/big-%.wp: big-tournaments/big-%.txt tp.f64
+	./tp.f64 $< $@ 1
+
+big-tournaments/big-%.justice: big-tournaments/big-%.txt tp.f64
+	./tp.f64 $< $@ 2
+
+big-tournaments/big-%.elo: big-tournaments/big-%.txt tp.f64
+	./tp.f64 $< $@ 3
+
+strategic_wins.pdf: experimental-data naive-opt.txt
+	./grafico_minmax_victorias.py
+
+all_correlations.pdf: correlations.txt
+	./grafico_correlacion_segun_torneo.py
+
+shuffled_single_3.pdf shuffled_round_robin_42.pdf big_shuffled_single.pdf big_same_single.pdf: \
+  experimental-data                                              \
+                                                                 \
+  experimental-results-f64/shuffled-single-elimination-3.cmm     \
+  experimental-results-f64/shuffled-single-elimination-3.wp      \
+  experimental-results-f64/shuffled-single-elimination-3.justice \
+  experimental-results-f64/shuffled-single-elimination-3.elo     \
+                                                                 \
+  experimental-results-f64/shuffled-round-robin-42.cmm           \
+  experimental-results-f64/shuffled-round-robin-42.wp            \
+  experimental-results-f64/shuffled-round-robin-42.justice       \
+  experimental-results-f64/shuffled-round-robin-42.elo           \
+                                                                 \
+  big-tournaments/big-shuffled-single.cmm                        \
+  big-tournaments/big-shuffled-single.wp                         \
+  big-tournaments/big-shuffled-single.justice                    \
+  big-tournaments/big-shuffled-single.elo                        \
+                                                                 \
+  big-tournaments/big-same-single.cmm                            \
+  big-tournaments/big-same-single.wp                             \
+  big-tournaments/big-same-single.justice                        \
+  big-tournaments/big-same-single.elo
+	./scatterplots_del_informe.py
+
 clean:
 	rm -f *.o tp.f32 tp.f64 tp.f80 optimize-wins
 
