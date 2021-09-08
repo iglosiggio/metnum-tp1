@@ -50,11 +50,14 @@ correlations.txt: experimental-results-f64
 	./compare_rankings.py --compare-all > correlations.txt
 
 naive-opt.txt: optimize-wins experimental-data
+	@echo =====================
 	@echo === naive-opt.txt ===
 	@echo "Éste es un proceso muy largo, si lo querés correr de verdad ejecutá:"
 	@echo "./optimize-wins 15 experimental-data/shuffled-round-robin-16.txt > naive-opt.txt"
-	@echo En lugar de eso voy a usar `naive-opt-old.txt`
-	mv naive-opt-old.txt naive-opt.txt
+	@echo En lugar de eso voy a usar "`naive-opt-old.txt`"
+	@echo === naive-opt.txt ===
+	@echo =====================
+	@cp naive-opt-old.txt naive-opt.txt
 
 
 big-tournaments/big-%.txt: experimental-data
