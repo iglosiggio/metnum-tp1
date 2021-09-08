@@ -5,7 +5,16 @@ OBJS=colleyMatrixMethod.f$(METNUM_FLOAT_WIDTH).o \
                     tp1.f$(METNUM_FLOAT_WIDTH).o
 CXXFLAGS += -std=c++17 -O2
 
-all: tp.f32 tp.f64 tp.f80 optimize-wins
+# El diseño original de este Makefile era para permitir compilar el mismo\
+# código con distintos floats. No terminamos usando eso.
+#BINARIOS = tp.f32 tp.f64 tp.f80 optimize-wins
+BINARIOS = tp.f64 optimize-wins
+
+GRAFICOS = strategic_wins.pdf shuffled_single_3.pdf \
+           shuffled_round_robin_42.pdf big_shuffled_single.pdf \
+           big_same_single.pdf all_correlations.pdf
+
+all: $(BINARIOS) $(GRAFICOS)
 
 tp.f32:
 	$(MAKE) METNUM_FLOAT_WIDTH=32 build
