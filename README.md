@@ -23,6 +23,10 @@ El `.tex` está disponible en la carpeta informe. El `.pdf` tiene el nombre
 El informe requiere del software `graphviz` para la construcción de algunas
 ilustraciones.
 
+Finalmente, el informe provee un `Makefile` que utiliza `latexmk` y se encarga
+de generar los gráficos de ser necesario. Para esto requiere las dependencias
+propias de la carpeta de experimentación que se detallan más adelante.
+
 ## Implementación
 
 La implementación fué realizada en C++, los tests de la cátedra se pueden
